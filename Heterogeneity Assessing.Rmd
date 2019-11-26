@@ -1,0 +1,51 @@
+---
+title: "Heterogeneity Assessing"
+author: "Kee-Young Shin"
+date: "11/25/2019"
+output: html_document
+---
+```{r}
+library(parallel)
+n1.goal=35
+K=5
+AR = rep(2,5)
+ s1.max = ceiling(1.5*n1.goal) 
+  no.bask.rule1 = n1.goal*K
+  s1.min = floor(0.5*n1.goal)
+  
+  # stage 2|homogeneous design min and max sample sizes before can perform one-sample test of efficacy
+n2.0.goal=70
+  s2.max = ceiling(1.5*n2.0.goal)
+  s2.min = 1
+  no.bask.rule2 = n2.0.goal*K
+  
+  Time1 = {}
+  ### generate time of enrollment for stage 1 and number of patients in stage 1
+  Baskets = matrix(NA,nrow = s1.max*K,ncol = 2)
+  for (i in 1:K){
+    Baskets[(i+(i-1)*(s1.max-1)):(i*s1.max),] = cbind(rexp(s1.max,AR[i]),rep(i,s1.max))
+  }
+  ord = order(Baskets[,1])
+  keep = Baskets[ord,][1:no.bask.rule1,]
+  tab = table(factor(keep[,2],levels = 1:K))
+  n1 = {}
+  for (i in 1:K){
+    n1[i] = as.numeric(tab)[i]
+  }
+  
+  # generate number of responses 
+  yes.s1 = rbinom(K,n1,.3)
+  no.s1 = n1 - yes.s1
+  
+   ### evaluate TOH ###
+  tab = matrix(c(yes.s1,no.s1),nrow = K,byrow = F)
+  p.val = ifelse(sum(yes.s1)==0, fisher.test(tab)$p.value, fisher.test(tab,hybrid = T,simulate.p.value=T)$p.value) # don't simulate pval if marginal of all yes = 0
+  toh = as.numeric(p.val <= 0.05)
+  
+  yes.s2 = rep(NA,K); dec = rep(0,K); K.star = {}; stage2.t2 = 0; stage2.t1 = rep(0,K); n2.0 = rep(NA,K); n2.1 = rep(NA,K)
+  Time21 = rep(0,K); Time20 = rep(0,K)
+  
+  if (toh == 1){ # reject TOH => heterogeneous baskets
+  
+```
+
