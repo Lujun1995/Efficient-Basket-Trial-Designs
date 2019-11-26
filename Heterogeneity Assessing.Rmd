@@ -4,48 +4,109 @@ author: "Kee-Young Shin"
 date: "11/25/2019"
 output: html_document
 ---
+
+
+
+
 ```{r}
 library(parallel)
-n1.goal=35
-K=5
-AR = rep(2,5)
- s1.max = ceiling(1.5*n1.goal) 
-  no.bask.rule1 = n1.goal*K
-  s1.min = floor(0.5*n1.goal)
-  
-  # stage 2|homogeneous design min and max sample sizes before can perform one-sample test of efficacy
-n2.0.goal=70
-  s2.max = ceiling(1.5*n2.0.goal)
-  s2.min = 1
-  no.bask.rule2 = n2.0.goal*K
-  
-  Time1 = {}
-  ### generate time of enrollment for stage 1 and number of patients in stage 1
-  Baskets = matrix(NA,nrow = s1.max*K,ncol = 2)
-  for (i in 1:K){
-    Baskets[(i+(i-1)*(s1.max-1)):(i*s1.max),] = cbind(rexp(s1.max,AR[i]),rep(i,s1.max))
-  }
-  ord = order(Baskets[,1])
-  keep = Baskets[ord,][1:no.bask.rule1,]
-  tab = table(factor(keep[,2],levels = 1:K))
-  n1 = {}
-  for (i in 1:K){
-    n1[i] = as.numeric(tab)[i]
-  }
+
+# create function for one trial
+trial = function(n1.goal, K, n2.0.goal, rS, rC, n2.1.goal, theta_0, alphaS, alphaC, gamma, theta_a){
+  prob = c(rep(theta_a,2), rep(theta_0,K-2))
+  # subjects in first stage 
+  n1 = rep(n1.goal, K)
   
   # generate number of responses 
-  yes.s1 = rbinom(K,n1,.3)
-  no.s1 = n1 - yes.s1
+  yes_s1 = rbinom(K,n1,prob)
+  no_s1 = n1 - yes_s1
   
-   ### evaluate TOH ###
-  tab = matrix(c(yes.s1,no.s1),nrow = K,byrow = F)
-  p.val = ifelse(sum(yes.s1)==0, fisher.test(tab)$p.value, fisher.test(tab,hybrid = T,simulate.p.value=T)$p.value) # don't simulate pval if marginal of all yes = 0
-  toh = as.numeric(p.val <= 0.05)
+  # test of homogeneity 
+  tab = matrix(c(yes_s1,no_s1),nrow = K,byrow = F)
+  p_val = ifelse(sum(yes_s1)==0, fisher.test(tab)$p.value, fisher.test(tab,hybrid = T,simulate.p.value=T)$p.value) # don't simulate pval if marginal of all yes = 0
+  toh = as.numeric(p_val <= gamma)
   
-  yes.s2 = rep(NA,K); dec = rep(0,K); K.star = {}; stage2.t2 = 0; stage2.t1 = rep(0,K); n2.0 = rep(NA,K); n2.1 = rep(NA,K)
-  Time21 = rep(0,K); Time20 = rep(0,K)
+  yes_s2 = rep(NA,K); dec = rep(0,K); K_star = {}; stage2_t2 = 0; stage2_t1 = rep(0,K); n2_0 = rep(NA,K); n2_1 = rep(NA,K)
   
-  if (toh == 1){ # reject TOH => heterogeneous baskets
+  if (toh == 1){
+    # determine which baskets to keep 
+    K_star = which(yes_s1 >= rS) # keep baskets with min desirable RR
+    stage2_t1[K_star] = 1 # keep track of baskets that go on
+    if (length(K_star) > 0){
+      n2_1[K_star] = n2.1.goal
+      
+      # stage 2
+      yes_s2[K_star] = rbinom(length(K_star),n2_1[K_star],prob[K_star])
+      no_s2 = n2_1 - yes_s2
+      
+      # decision to reject in each basket 
+      for (i in 1:length(K_star)){
+        dec[K_star[i]] =
+          as.numeric(binom.test(yes_s1[K_star[i]]+yes_s2[K_star[i]],
+                                n1[K_star[i]]+n2_1[K_star[i]],
+                                theta_0,alternative = "greater")$p.value <=
+                     (alphaS/length(K_star)) ) }
+    }
+  } else if (toh==0) {
+    
+      # keeping track if baskets go on to stage 2
+      stage2_t2 = ifelse(sum(yes_s1) >= rC,1,0)
+    
+      if (stage2.t2 == 1){
+          n2_0[i] = rep(n2.0.goal, K)
+      }
+      # generate Stage 2 responses
+      yes_s2 = rbinom(K,n2_0,prob)
+      no_s2 = n2_0 - yes_s2
+      
+      # decision to reject one sample
+      dec = rep(ifelse(as.numeric(binom.test(sum(yes_s1+yes_s2),
+                                             sum(n1+n2_0),
+                                             theta_0,
+                                             alternative = "greater")$p.value <=
+                                    (alphaC)),1,0),K)
+    }
+  # end trial
+  return(c(dec, yes_s1, yes_s2, length(K_star), toh,
+           stage2_t1,stage2_t2,n1,n2_0))
+}
+```
+
+```{r}
+gamma = seq(0.1,0.9,by = 0.05)
+alphaS = seq(0.01,0.1,by = 0.01)
+alphaC = seq(0.01,0.05, by = 0.01)
+
+### search grid for 3 alphas: error rates ###
+full.set.index = cbind(rep(1:length(gamma),each = length(alphaS) * length(alphaC)), rep(rep(1:length(alphaS),each = length(alphaC)),times = length(gamma)), rep(1:length(alphaC),times = length(gamma)*length(alphaS)))
+for (it in 1:length(gamma)){
+  Full.set = cbind(gamma[full.set.index[,1]],alphaS[full.set.index[,2]],alphaC[full.set.index[,3]])
+}
+```
+
+```{r}
+# simulations function 
+sim_heterogeneity = function(h, K, sim, n1.goal, K, n2.0.goal, prob, rS, rC, n2.1.goal, theta_0, theta_a, alphaS, alphaC, gamma, prob = c(rep(theta_a,h), rep(theta_0,K-h))){
   
+  set.seed(31)
+  result = sapply(1:sim, trial, K = K, n1.goal = n1.goal, n2.1.goal = n2.1.goal, n2.0.goal = n2.0.goal, theta_0 = theta_0, theta_a = theta_a, rS = rS, rC = rC, gamma = gamma, alphaS = alphaS, alphaC = alphaC, prob = prob)
+  
+  ### Marginal Rejection Probability ###
+  mrp = rowSums(result[(1:(K)),],na.rm = T)/sim
+}
+```
+
+```{r}
+set.seed(31)
+  result = sapply(1:100, trial, K = 5, n1.goal = 7, n2.1.goal = 15, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+  
+set.seed(14234)
+res = trial(K = 5, n1.goal = 7, n2.1.goal = 15, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+  
+  ### Marginal Rejection Probability ###
+  mrp = rowSums(result[(1:(K)),],na.rm = T)/sim
+  
+df = data.frame(c(2,4,3), c(4,6,2), c(3,3,3))
+sapply(df, mean())
 ```
 
