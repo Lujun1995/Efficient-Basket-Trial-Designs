@@ -12,7 +12,7 @@ output: html_document
 library(parallel)
 
 # create function for one trial
-trial = function(n1.goal, K, n2.0.goal, rS, rC, n2.1.goal, theta_0, alphaS, alphaC, gamma, theta_a){
+trial = function(it, n1.goal, K, n2.0.goal, rS, rC, n2.1.goal, theta_0, alphaS, alphaC, gamma, theta_a){
   prob = c(rep(theta_a,2), rep(theta_0,K-2))
   # subjects in first stage 
   n1 = rep(n1.goal, K)
@@ -86,27 +86,38 @@ for (it in 1:length(gamma)){
 
 ```{r}
 # simulations function 
-sim_heterogeneity = function(h, K, sim, n1.goal, K, n2.0.goal, prob, rS, rC, n2.1.goal, theta_0, theta_a, alphaS, alphaC, gamma, prob = c(rep(theta_a,h), rep(theta_0,K-h))){
+sim_heterogeneity = function(h, sim, n1.goal, K, n2.0.goal, rS, rC, n2.1.goal, theta_0, theta_a, alphaS, alphaC, gamma){
   
   set.seed(31)
-  result = sapply(1:sim, trial, K = K, n1.goal = n1.goal, n2.1.goal = n2.1.goal, n2.0.goal = n2.0.goal, theta_0 = theta_0, theta_a = theta_a, rS = rS, rC = rC, gamma = gamma, alphaS = alphaS, alphaC = alphaC, prob = prob)
+  result = sapply(1:sim, trial, K = K, n1.goal = n1.goal, n2.1.goal = n2.1.goal, n2.0.goal = n2.0.goal, theta_0 = theta_0, theta_a = theta_a, rS = rS, rC = rC, gamma = gamma, alphaS = alphaS, alphaC = alphaC)
   
-  ### Marginal Rejection Probability ###
+  # Marginal Rejection Probability
   mrp = rowSums(result[(1:(K)),],na.rm = T)/sim
+  return(mrp)
 }
+
+
 ```
 
 ```{r}
+AR = rep(2,5)
 set.seed(31)
-  result = sapply(1:100, trial, K = 5, n1.goal = 7, n2.1.goal = 15, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+result = sapply(1:100, trial, K = 5, AR = AR, n1.goal = 35, n2.1.goal = 20, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45, p.sim = prob)
   
+prob = c(rep(.45,2), rep(.15,5-2))  
 set.seed(14234)
-res = trial(K = 5, n1.goal = 7, n2.1.goal = 15, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+res = trial(K = 5, AR = AR, n1.goal = 35, n2.1.goal = 20, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45, p.sim = prob)
   
   ### Marginal Rejection Probability ###
-  mrp = rowSums(result[(1:(K)),],na.rm = T)/sim
+mrp = rowSums(][;[(1:(5)),],na.rm = T)/100
   
 df = data.frame(c(2,4,3), c(4,6,2), c(3,3,3))
 sapply(df, mean())
+
+
+
+res = sapply(1:100, trial, K = 5, n1.goal = 35, n2.1.goal = 20, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+rowSums(res[(1:(5)),],na.rm = T)/100
+  
 ```
 
