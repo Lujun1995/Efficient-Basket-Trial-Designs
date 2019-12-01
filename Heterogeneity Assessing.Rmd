@@ -135,7 +135,7 @@ sim_heterogeneity = function(h, sim, n1.goal, K, n2.0.goal, rS, rC, n2.1.goal, t
 ```{r}
 # testing 
 
-test = sim_heterogeneity(h = 2, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 20, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+test = sim_heterogeneity(h = 0, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
 test
 ```
 
