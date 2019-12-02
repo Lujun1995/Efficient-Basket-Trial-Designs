@@ -135,81 +135,22 @@ sim_heterogeneity = function(h, sim, n1.goal, K, n2.0.goal, rS, rC, n2.1.goal, t
 ```{r}
 # testing 
 
-test = sim_heterogeneity(h = 0, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+# no active baskets 
+test = sim_heterogeneity(h = 0, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 25, n2.0.goal = 75, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
 test
-```
 
+# two active baskets
+test2 = sim_heterogeneity(h = 2, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+test2
 
-
-
-```{r}
-set.seed(234234)
-res = sapply(1:100, trial, h = 2, K = 5, n1.goal = 35, n2.1.goal = 20, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
-
-
-# number of trials each track 
-  toh1 = which(res[(3*K+2),] == 1) # Track 1
-  toh0 = which(res[(3*K+2),] == 0) # Track 2
-  results1 = res[,toh1]
-  results0 = res[,toh0]
-  track1 = length(toh1)
-  track2 = length(toh0)
-  
-  # count of stage 2 for each track ###
-  stage2_t1 = rowSums(res[(3*K+3):(4*K+2),],na.rm = T)
-  stage2_t2 = sum(res[(4*K+3),],na.rm = T)
-  
-  # EN
-  n1.obs = rowSums(res[(4*K+4):(5*K+3),])/100
-  n2.0.obs = rowSums(res[(5*K+4):(6*K+3),],na.rm = T)/100
-  temp = 20*(stage2_t1/track1)
-  EN = sum(n1.obs)+(track1/100)*sum(temp)+(track2/100)*
-    (sum(n2.0.obs)*(stage2_t2/track2) )
+# all active baskets
+test3 = sim_heterogeneity(h = 5, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+test3
 ```
 
 
 
 
 
-```{r}
-AR = rep(2,5)
-set.seed(31)
-result = sapply(1:100, trial, K = 5, AR = AR, n1.goal = 35, n2.1.goal = 20, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45, p.sim = prob)
-  
-prob = c(rep(.45,2), rep(.15,5-2))  
-set.seed(14234)
-res = trial(K = 5, AR = AR, n1.goal = 35, n2.1.goal = 20, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45, p.sim = prob)
-  
-  ### Marginal Rejection Probability ###
-mrp = rowSums(][;[(1:(5)),],na.rm = T)/100
-  
-df = data.frame(c(2,4,3), c(4,6,2), c(3,3,3))
-sapply(df, mean())
 
-
-res = trial(h = 2, K = 5, n1.goal = 35, n2.1.goal = 20, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
-res = sapply(1:100,h=2, trial, K = 5, n1.goal = 35, n2.1.goal = 20, n2.0.goal = 5, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
-resres = sim(K = 5, n.sim = 100, accrual = AR,X = c(.52,.07,.05),n1 = 35, n2.1 = 20, n2.0 = 5, theta_0 = .15, r.s = 1, r.c = 5, theta_a = 0.45, sc = 2)
-rowSums(res[(1:(5)),],na.rm = T)/100
-ifelse(2 < K - 1, sum(as.numeric(colSums(res[((1+2):(K)),],na.rm = T) >= 1))/sim, ifelse( 2 == K-1, sum(res[((1+2):(K)),],na.rm = T)/n.sim, NA ))
-
-stage2_t1 = rowSums(res[(3*K+3):(4*K+2),],na.rm = T)
-stage2_t2 = sum(res[(4*K+3),],na.rm = T)
-  ### number of trials each track ###
-  toh1 = which(res[(3*K+2),] == 1) # Track 1
-  toh0 = which(res[(3*K+2),] == 0) # Track 2
-  results1 = res[,toh1]
-  results0 = res[,toh0]
-  track1 = length(toh1); track2 = length(toh0)
-
-  n1.obs = rowSums(res[(4*K+4):(5*K+3),])/100
-  n2.0.obs = rowSums(res[(5*K+4):(6*K+3),],na.rm = T)/(stage2_t2)
-  temp = 20*(stage2_t1/track1)
-  EN = sum(n1.obs)+(track1/n.sim)*sum(temp)+(track2/n.sim)*( sum(n2.0.obs)*(stage2.t2/track2) )
-  
-  sum(c(20,20,20,20,20)*(c(1,1,1,1,1)/100))
-  
-return(c(dec, yes_s1, yes_s2, length(K_star), toh,
-           stage2_t1,stage2_t2,n1,n2_0))
-```
 
