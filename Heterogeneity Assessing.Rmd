@@ -139,13 +139,17 @@ sim_heterogeneity = function(h, sim, n1.goal, K, n2.0.goal, rS, rC, n2.1.goal, t
 test = sim_heterogeneity(h = 0, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 25, n2.0.goal = 75, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
 test
 
-# two active baskets
-test2 = sim_heterogeneity(h = 2, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+# one active baskets
+test2 = sim_heterogeneity(h = 1, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
 test2
 
-# all active baskets
-test3 = sim_heterogeneity(h = 5, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+# four active baskets
+test3 = sim_heterogeneity(h = 4, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
 test3
+
+# all active baskets 
+test4 = sim_heterogeneity(h = 5, sim = 100, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+test4
 ```
 
 
