@@ -162,20 +162,30 @@ trial2 = function(it, h, n1.goal, K, n2.0.goal, rS, rC, n2.1.goal, theta_0, alph
     K_star = which(yes_s1 >= rS) # keep baskets with min desirable RR
     stage2_t1[K_star] = 1 # keep track of baskets that go on
     if (length(K_star) > 0){
-      n2_1[K_star] = floor(n2.0.goal/K)
+      n2_1[K_star] = floor(n2.1.goal/K)
       
       # stage 2
       yes_s2[K_star] = rbinom(length(K_star),n2_1[K_star],prob[K_star])
       no_s2 = n2_1 - yes_s2
       
+      
+      if (length(K_star)>3){
       # pool kept baskets 
       dec[K_star] = ifelse(
-        as.numeric(binom.test(sum(yes_s1[K_star]+yes_s2[K_star]),
-                                             sum(n1[K_star]+n2_1[K_star]),
+        as.numeric(binom.test(sum(yes_s1)+sum(yes_s2[K_star], na.rm = T),
+                              sum(n1)+sum(n2_1[K_star], na.rm = T),
                                              theta_0,
                                              alternative = "greater")$p.value 
-                                  <= (alphaC)),1,0)
-      
+                                  <= (alphaC)),1,0) } 
+      else {
+      # decision to reject in each basket 
+      for (i in 1:length(K_star)){
+        dec[K_star[i]] =
+          as.numeric(binom.test(yes_s1[K_star[i]]+yes_s2[K_star[i]],
+                                n1[K_star[i]]+n2_1[K_star[i]],
+                                theta_0,alternative = "greater")$p.value <=
+                     (alphaS/length(K_star)) ) } 
+      }
     }
   } else if (toh==0) {
     
@@ -236,7 +246,7 @@ sim_heterogeneity2 = function(h, sim, n1.goal, K, n2.0.goal, rS, rC, n2.1.goal, 
   # EN
   n1.obs = rowSums(result[(4*K+4):(5*K+3),])/sim
   n2.0.obs = rowSums(result[(5*K+4):(6*K+3),],na.rm = T)/stage2_t2
-  temp = (n2.0.goal/K)*(stage2_t1/track1)
+  temp = (n2.1.goal/K)*(stage2_t1/track1)
   EN = sum(n1.obs)+(track1/sim)*sum(temp)+(track2/sim)*
     (sum(n2.0.obs)*(stage2_t2/track2) )
   
@@ -306,29 +316,38 @@ test5
 ```{r}
 # testing with pooling of hetergeneous baskets 
 # no active baskets 
-test_ = sim_heterogeneity2(h = 0, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 25, n2.0.goal = 75, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
-test_
+test2 = sim_heterogeneity2(h = 0, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 25, n2.0.goal = 75, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+test2
 
 # one active baskets
-test_1 = sim_heterogeneity2(h = 1, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
-test_1
+test2_1 = sim_heterogeneity2(h = 1, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+test2_1
 
 # two active baskets
 test2_2 = sim_heterogeneity2(h = 2, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
 test2_2
 
 # three active baskets
-test_3 = sim_heterogeneity2(h = 3, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
-test_3
+test2_3 = sim_heterogeneity2(h = 3, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+test2_3
 
 # four active baskets
-test_4 = sim_heterogeneity2(h = 4, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
-test_4
+test2_4 = sim_heterogeneity2(h = 4, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+test2_4
 
 # all active baskets 
-test_5 = sim_heterogeneity2(h = 5, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
-test_5
+test2_5 = sim_heterogeneity2(h = 5, sim = 1000, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+test2_5
 ```
+
+
+
+
+
+
+
+
+
 
 
 
@@ -361,5 +380,6 @@ rowSums(result[(6*K+4):(7*K+3)])/stage2_t1
 sum(rowSums(prac[34:38,], na.rm = T)/rowSums(prac[(18):(22),],na.rm = T))
 sum(colSums(prac[34:38,], na.rm = T)/5)
 sum(prac[18:22,])
+trial2(h = 2, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
 ```
 
