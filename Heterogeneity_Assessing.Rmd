@@ -351,3 +351,35 @@ test2_5
 
 
 
+```{r}
+#return(c(dec, yes_s1, yes_s2, length(K_star), toh, stage2_t1,stage2_t2,n1,n2_0))
+trial2(h = 2, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+
+# number of trials each track 
+  toh1 = which(result[(3*K+2),] == 1) # Track 1
+  toh0 = which(result[(3*K+2),] == 0) # Track 2
+  results1 = result[,toh1]
+  results0 = result[,toh0]
+  track1 = length(toh1)
+  track2 = length(toh0)
+  
+  # count of stage 2 for each track ###
+  stage2_t1 = rowSums(result[(3*K+3):(4*K+2),],na.rm = T)
+  stage2_t2 = sum(result[(4*K+3),],na.rm = T)
+  
+  # EN
+  n1.obs = rowSums(result[(4*K+4):(5*K+3),])/sim
+  n2.0.obs = rowSums(result[(5*K+4):(6*K+3),],na.rm = T)/stage2_t2
+  n2.1.obs = rowSums(result[(6*K+4):(7*K+3)])/stage2_t1
+  temp = (n2.1.goal/K)*(stage2_t1/track1)
+  EN = sum(n1.obs)+(track1/sim)*(sum(n2.1.obs)*(stage2_t2/track1)) +(track2/sim)*(sum(n2.0.obs)*(stage2_t2/track2))
+  
+
+prac = sapply(1:10,trial2,h = 0, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+rowSums(result[(6*K+4):(7*K+3)])/stage2_t1
+sum(rowSums(prac[34:38,], na.rm = T)/rowSums(prac[(18):(22),],na.rm = T))
+sum(colSums(prac[34:38,], na.rm = T)/5)
+sum(prac[18:22,])
+trial2(h = 2, K = 5, n1.goal = 35, n2.1.goal = 75, n2.0.goal = 20, theta_0 = .15, rS = 1, rC = 5, gamma = .52, alphaS = .07, alphaC = .05, theta_a = 0.45)
+```
+
